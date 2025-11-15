@@ -1,12 +1,10 @@
 # ===========
 # Build stage
 # ===========
-FROM golang:1.24 AS builder
+FROM golang:1.25-alpine AS builder
 
 # Install build dependencies and Node.js
-RUN apt-get update && apt-get install -y wget ca-certificates curl upx && rm -rf /var/lib/apt/lists/*
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache ca-certificates curl gcc musl-dev nodejs npm tzdata upx wget
 
 # Install templ CLI
 RUN go install github.com/a-h/templ/cmd/templ@latest
@@ -39,9 +37,9 @@ RUN upx --best --lzma watchma
 # ============
 # Runtime stage
 # ============
-FROM debian:bookworm-slim
+FROM alpine:latest
 
-RUN apt-get update && apt-get install -y ca-certificates sqlite3 && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache ca-certificates musl
 
 WORKDIR /app
 
