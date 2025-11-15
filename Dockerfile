@@ -4,7 +4,7 @@
 FROM golang:1.24 AS builder
 
 # Install build dependencies and Node.js
-RUN apt-get update && apt-get install -y wget ca-certificates curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y wget ca-certificates curl upx && rm -rf /var/lib/apt/lists/*
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && rm -rf /var/lib/apt/lists/*
 
@@ -32,8 +32,9 @@ RUN templ generate
 RUN npx @tailwindcss/cli@latest -i ./public/input.css -o ./public/style.css --minify
 
 # Build the Go application
-RUN CGO_ENABLED=1 GOOS=linux go build -o watchma ./cmd/main.go
+RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-w -s" -o watchma ./cmd/main.go
 
+RUN upx --best --lzma watchma
 
 # ============
 # Runtime stage
